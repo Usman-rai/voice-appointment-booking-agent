@@ -17,9 +17,11 @@ all through natural voice conversation.
 
 Built for healthcare clinics (dental, physio, GP) that miss calls after hours,
 but the architecture works for any appointment-based business.
-
+### 🎙️ [Try the live demo](https://bright-smile-melbourne.base44.app) · [Watch the walkthrough](https://www.loom.com/share/5eee8303bfe64e659869980768394bae)
 ### ▶️ (https://www.loom.com/share/4108e38636b34e0a9d1ed880b15c3086)
-
+<p align="center">
+  <img src="assets/banner.png" alt="AI Voice Appointment Booking Agent" width="100%">
+</p>
 ---
 
 ## What it does
