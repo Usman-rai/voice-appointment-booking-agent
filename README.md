@@ -17,11 +17,9 @@ all through natural voice conversation.
 
 Built for healthcare clinics (dental, physio, GP) that miss calls after hours,
 but the architecture works for any appointment-based business.
-### 🎙️ [Try the live demo](https://bright-smile-melbourne.base44.app) · [Watch the walkthrough](https://www.loom.com/share/5eee8303bfe64e659869980768394bae)
-### ▶️ (https://www.loom.com/share/4108e38636b34e0a9d1ed880b15c3086)
-<p align="center">
-  <img src="assets/banner.png" alt="AI Voice Appointment Booking Agent" width="100%">
-</p>
+
+### 🌐 [Try the live demo](https://bright-smile-melbourne.base44.app) · 🎥 [Watch the walkthrough](https://www.loom.com/share/5eee8303bfe64e659869980768394bae) · ▶️ [Voice agent in action](https://www.loom.com/share/4108e38636b34e0a9d1ed880b15c3086)
+
 ---
 
 ## What it does
@@ -76,7 +74,6 @@ mechanical work — look at the calendar, write the record, answer. Fast where
 it needs to be fast, reliable where it needs to be reliable.
 
 ---
-
 
 ## How a booking flows through n8n
 
@@ -139,16 +136,17 @@ A few real problems this solves under the hood:
 
 ## Status
 
-This is a working demo built end to end. The availability check and booking
-flow both run live: VAPI holds the conversation, n8n reads and writes the
-calendar and database, and the caller hears a real answer.
+This is a working demo built end to end and deployed live. The availability
+check and booking flow both run in production: VAPI holds the conversation,
+n8n reads and writes the calendar and database, and the caller hears a real
+answer.
 
 ---
 
 ## About
 
 Built by **Usman Farooq** — AI automation developer specializing in n8n,
-AI agents, and WhatsApp/voice booking systems for healthcare clinics.
+AI agents, and voice/WhatsApp booking systems.
 
 - LinkedIn: [linkedin.com/in/usman-rai](https://linkedin.com/in/usman-rai)
 - GitHub: [github.com/Usman-rai](https://github.com/Usman-rai)
