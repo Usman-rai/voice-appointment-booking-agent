@@ -1,0 +1,679 @@
+{
+  "name": "appointement booking voice agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "efab1080-feb5-4ac9-96e9-08aab7fae101",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        0
+      ],
+      "id": "4052fd96-bd41-4b4b-ae00-8980e951763d",
+      "name": "Webhook",
+      "webhookId": "efab1080-feb5-4ac9-96e9-08aab7fae101"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.message.toolCalls[0].function.name }}",
+                    "rightValue": "checkAvailability",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fae4af7f-5557-4a46-80bf-8acd9e23f040"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e973e744-d6a5-4921-bdb1-67c05b371a54",
+                    "leftValue": "={{ $json.body.message.toolCalls[0].function.name }}",
+                    "rightValue": "bookAppointment",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        0
+      ],
+      "id": "3bdc351e-9172-4e2e-acdf-41e0da20b98e",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "raiusmanr517@gmail.com",
+          "mode": "list",
+          "cachedResultName": "raiusmanr517@gmail.com"
+        },
+        "returnAll": true,
+        "timeMin": "={{ $json.dayStart }}",
+        "timeMax": "={{ $json.dayEnd }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        -96
+      ],
+      "id": "03c416d0-74a5-4e0f-9257-15f314003547",
+      "name": "Get many events",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "iotKTnWA0JJ60JK6",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get free/busy result from previous node\nconst result = $input.first().json;\n\n// Get the callId straight from the webhook (stable reference)\nconst toolCall = $('Webhook').first().json.body.message.toolCalls[0];\nconst callId = toolCall.id;\n\n// Build the message VAPI will speak\nconst message = result.isFree\n  ? \"That time is available. Would you like me to book it?\"\n  : \"Sorry, that time is taken. Would another time work?\";\n\n// VAPI's required response format\nreturn [{\n  json: {\n    results: [\n      {\n        toolCallId: callId,\n        result: message\n      }\n    ]\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -96
+      ],
+      "id": "5146908a-0204-438e-b649-9c0bc14941cd",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\nconst toolCall = body.message.toolCalls[0];\nconst args = toolCall.function[\"arguments\"];\nconst parsed = typeof args === \"string\" ? JSON.parse(args) : args;\n\n// Safety net: if the model still sends a past year, fall back to tomorrow\nconst nowStr = body.message.artifact?.variables?.now;\nconst today = nowStr ? new Date(nowStr) : new Date();\nlet dateStr = parsed.date;\nconst md = new Date(parsed.date);\nif (isNaN(md.getTime()) || md.getFullYear() < today.getFullYear()) {\n  const t = new Date(today);\n  t.setDate(today.getDate() + 1);\n  dateStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,\"0\")}-${String(t.getDate()).padStart(2,\"0\")}`;\n}\n\nreturn [{\n  json: {\n    requestedDate: dateStr,\n    requestedTime: parsed.time,\n    dayStart: `${dateStr}T00:00:00`,\n    dayEnd: `${dateStr}T23:59:59`,\n    callId: toolCall.id\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        -96
+      ],
+      "id": "903176fe-dd88-410d-ab16-cdbb84673648",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"results\": $json.results } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1072,
+        -96
+      ],
+      "id": "9fd948cd-c317-4d3d-a9c1-268f568e4018",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const events = $input.all();\nconst realEvents = events.filter(e => e.json && e.json.start && e.json.start.dateTime);\nconst isFree = realEvents.length === 0;\n\nreturn [{\n  json: {\n    isFree: isFree,\n    status: isFree ? \"free\" : \"busy\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        -96
+      ],
+      "id": "3c0c9dee-687d-4df5-87e3-15f5288fde98",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Reads only the incoming item — no node-name references\nconst body = $input.first().json.body;\nconst toolCall = body.message.toolCalls[0];\nconst args = toolCall.function[\"arguments\"];\nconst parsed = typeof args === \"string\" ? JSON.parse(args) : args;\n\n// VAPI's real current date lives in the payload\nconst nowStr = body.message.artifact?.variables?.now;\nconst today = nowStr ? new Date(nowStr) : new Date();\n\n// Model often sends a past/wrong date → fall back to tomorrow\nlet finalDate = parsed.date;\nconst modelDate = new Date(parsed.date);\nif (isNaN(modelDate.getTime()) || modelDate.getFullYear() < today.getFullYear()) {\n  const t = new Date(today);\n  t.setDate(today.getDate() + 1);\n  const y = t.getFullYear();\n  const m = String(t.getMonth() + 1).padStart(2, \"0\");\n  const d = String(t.getDate()).padStart(2, \"0\");\n  finalDate = `${y}-${m}-${d}`;\n}\n\nconst serviceMap = {\n  \"cleaning\": \"Cleaning\", \"filling\": \"Filling\", \"whitening\": \"Whitening\",\n  \"dentures\": \"Dentures\", \"denture\": \"Dentures\", \"checkup\": \"Checkup\",\n  \"emergency\": \"Emergency\", \"emergency visit\": \"Emergency\", \"consultation\": \"Consultation\"\n};\nconst rawService = (parsed.service || \"\").toLowerCase().trim();\nconst service = serviceMap[rawService] || \"Consultation\";\n\nreturn [{\n  json: {\n    name: parsed.name || \"Patient\",\n    phone: parsed.phone || \"\",\n    service: service,\n    requestedDate: finalDate,\n    requestedTime: parsed.time || \"10:00 AM\",\n    callId: toolCall.id\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        96
+      ],
+      "id": "5f141078-fd78-4af6-a81f-a5378357070c",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "raiusmanr517@gmail.com",
+          "mode": "list",
+          "cachedResultName": "raiusmanr517@gmail.com"
+        },
+        "start": "={{ $json.requestedDate }}T10:00:00",
+        "end": "={{ $json.requestedDate }}T10:45:00",
+        "additionalFields": {
+          "description": "=Phone: {{ $json.phone }} | Booked via voice agent",
+          "summary": "=={{ $('Code in JavaScript3').item.json.service || \"Appointment\" }} - {{ $('Code in JavaScript3').item.json.name || \"Patient\" }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        96
+      ],
+      "id": "8649fcba-5800-4712-b280-63029f2d7bf5",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "iotKTnWA0JJ60JK6",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appvOoNEtpJuEEDru",
+          "mode": "list",
+          "cachedResultName": "Dental Clinic AI Assistant",
+          "cachedResultUrl": "https://airtable.com/appvOoNEtpJuEEDru"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblW1uK0QupwNfAh1",
+          "mode": "list",
+          "cachedResultName": "Appointments",
+          "cachedResultUrl": "https://airtable.com/appvOoNEtpJuEEDru/tblW1uK0QupwNfAh1"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Service Requested": "={{ $('Code in JavaScript3').item.json.service }}",
+            "Requested Date": "={{ $('Code in JavaScript3').item.json.requestedDate }}",
+            "Requested Time": "={{ $('Code in JavaScript3').item.json.requestedTime }}",
+            "Status": "=Confirmed",
+            "Booking Source": "=WhatsApp Bot",
+            "Notes": "={{ $('Code in JavaScript3').item.json.name }} - {{ $('Code in JavaScript3').item.json.phone }}",
+            "Appointment ID": 0
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Requested Time",
+              "displayName": "Requested Time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Patient",
+              "displayName": "Patient",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Service Requested",
+              "displayName": "Service Requested",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Cleaning",
+                  "value": "Cleaning"
+                },
+                {
+                  "name": "Filling",
+                  "value": "Filling"
+                },
+                {
+                  "name": "Whitening",
+                  "value": "Whitening"
+                },
+                {
+                  "name": "Dentures",
+                  "value": "Dentures"
+                },
+                {
+                  "name": "Checkup",
+                  "value": "Checkup"
+                },
+                {
+                  "name": "Emergency",
+                  "value": "Emergency"
+                },
+                {
+                  "name": "Consultation",
+                  "value": "Consultation"
+                },
+                {
+                  "name": "Emergency Dental Care",
+                  "value": "Emergency Dental Care"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Requested Date",
+              "displayName": "Requested Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Appointment ID",
+              "displayName": "Appointment ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pending",
+                  "value": "Pending"
+                },
+                {
+                  "name": "Confirmed",
+                  "value": "Confirmed"
+                },
+                {
+                  "name": "Completed",
+                  "value": "Completed"
+                },
+                {
+                  "name": "Cancelled",
+                  "value": "Cancelled"
+                },
+                {
+                  "name": "No Show",
+                  "value": "No Show"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Booking Source",
+              "displayName": "Booking Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "WhatsApp Bot",
+                  "value": "WhatsApp Bot"
+                },
+                {
+                  "name": "Phone",
+                  "value": "Phone"
+                },
+                {
+                  "name": "Website",
+                  "value": "Website"
+                },
+                {
+                  "name": "Walk-in",
+                  "value": "Walk-in"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created At",
+              "displayName": "Created At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Google Calendar Event ID",
+              "displayName": "Google Calendar Event ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Patient Name",
+              "displayName": "Patient Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Patient Status",
+              "displayName": "Patient Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Days Until Appointment",
+              "displayName": "Days Until Appointment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Is Today?",
+              "displayName": "Is Today?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Appointment Summary (AI)",
+              "displayName": "Appointment Summary (AI)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Next Action Recommendation (AI)",
+              "displayName": "Next Action Recommendation (AI)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        96
+      ],
+      "id": "b5d3b0d5-0155-4eb5-87cf-dbe2867f5c88",
+      "name": "Create a record",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "MqpcPX3k6UoR7Fw6",
+          "name": "Airtable OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const toolCall = $('Webhook').first().json.body.message.toolCalls[0];\nconst callId = toolCall.id;\n\nreturn [{\n  json: {\n    results: [\n      {\n        toolCallId: callId,\n        result: \"Your appointment is booked. You're all set!\"\n      }\n    ]\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        96
+      ],
+      "id": "b25effc2-544d-45a8-b3e9-7d70168097aa",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"results\": $json.results } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1088,
+        96
+      ],
+      "id": "38377279-4613-4837-b693-6fcd8249c215",
+      "name": "Respond to Webhook1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Get many events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many events": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "45f32b3d-89de-4c30-8e9e-89668c956f61",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "1623e51fe0567918445c628db75ae4f8a7e95daa3f3bf4bc5e405973ec278d1b"
+  },
+  "nodeGroups": [],
+  "id": "fTRkAWnUbmwUYsMO",
+  "tags": []
+}
