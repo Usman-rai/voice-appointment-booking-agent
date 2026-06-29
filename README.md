@@ -75,23 +75,6 @@ it needs to be fast, reliable where it needs to be reliable.
 
 ---
 
-## Screenshots
-
-<p align="center">
-  <img src="assets/workflow.png" alt="n8n workflow" width="85%">
-  <br><em>The n8n workflow — one webhook, a Switch that routes each tool, and the two branches.</em>
-</p>
-
-<p align="center">
-  <img src="assets/conversation.png" alt="Live call transcript" width="48%">
-  &nbsp;
-  <img src="assets/calendar.png" alt="Appointment booked in Google Calendar" width="48%">
-</p>
-<p align="center">
-  <em>Left: a live voice call being handled. &nbsp; Right: the appointment booked into Google Calendar.</em>
-</p>
-
----
 
 ## How a booking flows through n8n
 
