@@ -18,7 +18,7 @@ all through natural voice conversation.
 Built for healthcare clinics (dental, physio, GP) that miss calls after hours,
 but the architecture works for any appointment-based business.
 
-### ▶️ [Watch the 60-second demo](https://www.loom.com/share/4108e38636b34e0a9d1ed880b15c3086)
+### ▶️ (https://www.loom.com/share/4108e38636b34e0a9d1ed880b15c3086)
 
 ---
 
