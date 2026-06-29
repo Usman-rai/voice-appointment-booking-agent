@@ -1,19 +1,30 @@
+<p align="center">
+  <img src="assets/banner.png" alt="AI Voice Appointment Booking Agent" width="100%">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/VAPI-voice-2dd4bf?style=for-the-badge" alt="VAPI">
+  <img src="https://img.shields.io/badge/n8n-automation-EA4B71?style=for-the-badge" alt="n8n">
+  <img src="https://img.shields.io/badge/Google_Calendar-API-4285F4?style=for-the-badge" alt="Google Calendar">
+  <img src="https://img.shields.io/badge/Airtable-database-FFBF00?style=for-the-badge" alt="Airtable">
+</p>
+
 # AI Voice Appointment Booking Agent
 
 A 24/7 voice AI receptionist that answers phone calls, checks live calendar
 availability, and books appointments into Google Calendar and a database —
-all by natural voice conversation.
+all through natural voice conversation.
 
 Built for healthcare clinics (dental, physio, GP) that miss calls after hours,
 but the architecture works for any appointment-based business.
 
-**Live demo:** (https://www.loom.com/share/4108e38636b34e0a9d1ed880b15c3086)
+### ▶️ [Watch the 60-second demo](https://www.loom.com/share/4108e38636b34e0a9d1ed880b15c3086)
 
 ---
 
 ## What it does
 
-A caller phones the clinic. An AI receptionist named "Sarah" answers, talks
+A caller phones the clinic. An AI receptionist named **Sarah** answers, talks
 like a real person, and handles the whole booking:
 
 - Understands what service the caller wants
@@ -61,6 +72,24 @@ reasoning model inside the automation layer is too slow for a live call. So
 VAPI handles all the real-time thinking and voice, and n8n does the
 mechanical work — look at the calendar, write the record, answer. Fast where
 it needs to be fast, reliable where it needs to be reliable.
+
+---
+
+## Screenshots
+
+<p align="center">
+  <img src="assets/workflow.png" alt="n8n workflow" width="85%">
+  <br><em>The n8n workflow — one webhook, a Switch that routes each tool, and the two branches.</em>
+</p>
+
+<p align="center">
+  <img src="assets/conversation.png" alt="Live call transcript" width="48%">
+  &nbsp;
+  <img src="assets/calendar.png" alt="Appointment booked in Google Calendar" width="48%">
+</p>
+<p align="center">
+  <em>Left: a live voice call being handled. &nbsp; Right: the appointment booked into Google Calendar.</em>
+</p>
 
 ---
 
@@ -133,7 +162,7 @@ calendar and database, and the caller hears a real answer.
 
 ## About
 
-Built by Usman Farooq — AI automation developer specializing in n8n,
+Built by **Usman Farooq** — AI automation developer specializing in n8n,
 AI agents, and WhatsApp/voice booking systems for healthcare clinics.
 
 - LinkedIn: [linkedin.com/in/usman-rai](https://linkedin.com/in/usman-rai)
